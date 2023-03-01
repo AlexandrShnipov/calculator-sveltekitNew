@@ -3,21 +3,22 @@
   
   let textInput = '';
   let previousAction = '';
-  
+
   const inputContentAfterInput = (e) => {
     const input = e.target.textContent;
-    
+    const [firstNum, operator, secondNum] = textInput.split(/(\+|-|\*|\/|%|√)/);
     if (input === '=') {
-      const [firstNum, operator, secondNum] = textInput.split(/(\+|-|\*|\/)/);
-      
       if (operator === '/' && secondNum === '0') {
         textInput = 'press AC, please';
       } else {
         const result = calculate(firstNum, operator, secondNum);
-        previousAction = textInput
+        previousAction = textInput;
         textInput = Number.isNaN(result) ? 'press AC, please' : result.toString();
-        
       }
+    } else if (input === '√') {
+      previousAction = `${input}${textInput} `;
+      const result = calculate(firstNum, input);
+      textInput = Number.isNaN(result) ? 'press AC, please' : result.toString();
     } else if (input === 'AC') {
       textInput = '';
       previousAction = '';
@@ -25,7 +26,6 @@
       if (textInput === 'press AC, please') {
         textInput = '';
       }
-      
       if (textInput === '' && Number.isNaN(input)) {
         textInput = 'press AC, please';
       } else {
@@ -33,7 +33,8 @@
       }
     }
   };
-  
+
+
   const calculate = (firstNum, operator, secondNum) => {
     switch (operator) {
       case '+':
@@ -44,10 +45,20 @@
         return Number(firstNum) * Number(secondNum);
       case '/':
         return Number(firstNum) / Number(secondNum);
+      case '√':
+        return Number(Math.sqrt(firstNum));
+      case '%':
+        return Number(secondNum) * Number(firstNum) / 100;
       default:
+        if (operator.endsWith('√')) {
+          const num = operator.slice(0, -1);
+          return Number(num) * Math.sqrt(firstNum);
+        }
         return NaN;
     }
-  }
+  };
+
+
 </script>
 
 <div>
@@ -89,11 +100,13 @@
     list-style: none;
   }
   
-  li:nth-child(16) {
+  li:nth-child(16),
+  li:nth-child(18) {
     grid-column: 1/4;
   }
   
-  li:nth-child(17) {
+  li:nth-child(17),
+  li:nth-child(19) {
     grid-column: 4/6;
   }
   
