@@ -1,24 +1,25 @@
 <script>
-  import {buttons} from '$lib/calculator/Lets.js';
+  import { buttons } from '$lib/calculator/Lets.js';
   
   let textInput = '';
   let previousAction = '';
 
   const inputContentAfterInput = (e) => {
     const input = e.target.textContent;
-    const [firstNum, operator, secondNum] = textInput.split(/(\+|-|\*|\/|%|√)/);
+    const [lastNum, lastOperator] = textInput.match(/(-?\d*\.?\d+)(?!.*\d*\.?\d+)/g) || [null, null];
+  
     if (input === '=') {
-      if (operator === '/' && secondNum === '0') {
+      if (lastOperator === '/' && lastNum === '0') {
         textInput = 'press AC, please';
       } else {
-        const result = calculate(firstNum, operator, secondNum);
-        previousAction = textInput;
+        const result = calculate(textInput);
+        previousAction = textInput + '=';
         textInput = Number.isNaN(result) ? 'press AC, please' : result.toString();
       }
     } else if (input === '√') {
-      previousAction = `${input}${textInput} `;
-      const result = calculate(firstNum, input);
-      textInput = Number.isNaN(result) ? 'press AC, please' : result.toString();
+      previousAction = `${input}${lastNum} `;
+      const result = Math.sqrt(Number(lastNum));
+      textInput = Number.isNaN(result) ? 'press AC, please' : textInput.replace(/(-?\d*\.?\d+)(?!.*\d*\.?\d+)/g, result.toString());
     } else if (input === 'AC') {
       textInput = '';
       previousAction = '';
@@ -35,30 +36,41 @@
   };
 
 
-  const calculate = (firstNum, operator, secondNum) => {
-    switch (operator) {
-      case '+':
-        return Number(firstNum) + Number(secondNum);
-      case '-':
-        return Number(firstNum) - Number(secondNum);
-      case '*':
-        return Number(firstNum) * Number(secondNum);
-      case '/':
-        return Number(firstNum) / Number(secondNum);
-      case '√':
-        return Number(Math.sqrt(firstNum));
-      case '%':
-        return Number(secondNum) * Number(firstNum) / 100;
-      default:
-        if (operator.endsWith('√')) {
-          const num = operator.slice(0, -1);
-          return Number(num) * Math.sqrt(firstNum);
+  const calculate = (input) => {
+    const operators = ["+", "-", "*", "/", "%"];
+    let nums = input.split(new RegExp(`[${operators.join()}]`));
+    let ops = input.split(/[0-9\.]+/).filter((val) => val !== "");
+    
+    for (let i = 0; i < ops.length; i++) {
+      if (ops[i] === "√") {
+        nums[i] = Math.sqrt(Number(nums[i]));
+      } else if (ops[i] === "%") {
+        nums[i] = Number(nums[i+1])* Number(nums[i]) / 100;
+      } else if (ops[i] === "*") {
+        nums.splice(i, 2, Number(nums[i]) * Number(nums[i+1]));
+        ops.splice(i, 1);
+        i--;
+      } else if (ops[i] === "/") {
+        if (Number(nums[i+1]) === 0) {
+          return "Division by zero";
         }
-        return NaN;
+        nums.splice(i, 2, Number(nums[i]) / Number(nums[i+1]));
+        ops.splice(i, 1);
+        i--;
+      }
     }
+    
+    let result = Number(nums[0]);
+    for (let i = 0; i < ops.length; i++) {
+      if (ops[i] === "+") {
+        result += Number(nums[i+1]);
+      } else if (ops[i] === "-") {
+        result -= Number(nums[i+1]);
+      }
+    }
+    
+    return result;
   };
-
-
 </script>
 
 <div>
@@ -73,6 +85,7 @@
     {/each}
   </ul>
 </div>
+
 
 
 <style>

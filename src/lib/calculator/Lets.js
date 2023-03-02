@@ -30,13 +30,12 @@ export let buttons = [{
   id: 17, text: '-'
 }, {
   id: 18, text: '√'
-},
-  {
+},  {
     id: 17, text: '%'
   }, {
-  id: 19, text: '='
-}, {
-  id: 10, text: 'AC'
-}];
+    id: 19, text: '='
+  }, {
+    id: 10, text: 'AC'
+  }];
 
 
